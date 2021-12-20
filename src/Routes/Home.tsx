@@ -1,6 +1,6 @@
 import { useQuery } from "react-query";
 import { motion, AnimatePresence, useViewportScroll  } from "framer-motion";
-import { getMovies, IGetMoviesResult } from "./api";
+import { getMovies, IGetMoviesResult, getTopRateMovies, getUpcomingMovies } from "./api";
 import styled from "styled-components";
 import { makeImagePath } from "./utils";
 import { useState } from "react";
@@ -52,6 +52,7 @@ const BigOverview = styled.p`
 const Wrapper = styled.div`
     background: black;
     height: 200vh;
+    overflow: hidden;
 `
 
 const Loader = styled.div`
@@ -63,7 +64,7 @@ const Loader = styled.div`
 
 const Banner = styled.div<{ bgPhoto: string}>`
     height:100vh;
-    background-color: green;
+    background-color: white;
     display:flex;
     flex-direction: column;
     justify-content: center;
@@ -75,6 +76,14 @@ const Banner = styled.div<{ bgPhoto: string}>`
 const Title = styled.h2`
     font-size: 68px;
     margin-bottom:20px;
+`
+
+const Category = styled.h3`
+  position:relative;
+  bottom:5px;
+  padding: 10px;
+  font-size: 42px;
+  color: whitesmoke;
 `
 
 const Overview = styled.p`
@@ -169,15 +178,18 @@ function Home() {
     const bigMovieMatch = useMatch("/movies/:movieId");
     console.log(bigMovieMatch)
 
-    const {data, isLoading} = useQuery<IGetMoviesResult>(["movies", "nowPlaying"], getMovies)
+    const {data:nowPlaying, isLoading:nowPlayingLoading} = useQuery<IGetMoviesResult>(["movies", "nowPlaying"], getMovies)
+    const {data:topRate, isLoading:topRateLoading} = useQuery<IGetMoviesResult>(["movies", "topRate"], getTopRateMovies)
+    const {data:upcoming, isLoading:upcomingLoading} = useQuery<IGetMoviesResult>(["movies", "upcoming"], getUpcomingMovies)
+
     const [index, setIndex] = useState(0);
     const [leaving, setLeaving] = useState(false);
     
     const increateIndex = () => {
-        if (data) {
+        if (nowPlaying) {
             if (leaving) return;
             toggleLeaving();
-            const totalMovies = data.results.length - 2;
+            const totalMovies = nowPlaying.results.length - 2;
             const maxIndex = Math.ceil(totalMovies / offset) - 1
             
             setIndex((prev) => prev === maxIndex ? 0 : prev + 1)
@@ -192,26 +204,31 @@ function Home() {
 
     const clickedMovie =
     bigMovieMatch?.params.movieId &&
-    data?.results.find((movie) => movie.id + "" === bigMovieMatch.params.movieId);
+    nowPlaying?.results.find((movie) => movie.id + "" === bigMovieMatch.params.movieId);
 
     const { scrollY } = useViewportScroll();
 
+    const categories = [nowPlaying, topRate, upcoming]
+    const categoriesString = ["nowPlaying", "topRate", "upcoming" ]
     return (
         <Wrapper>
-            {isLoading ? (
+            {nowPlayingLoading ? (
                 <Loader>
                     Loading...
                 </Loader>
             ) : (
                 <>
-                    <Banner onClick={increateIndex} bgPhoto={makeImagePath(data?.results[0].backdrop_path || "")}>
-                        <Title>{data?.results[0].title}</Title>
-                        <Overview>{data?.results[0].overview}</Overview>
+                    <Banner onClick={increateIndex} bgPhoto={makeImagePath(nowPlaying?.results[0].backdrop_path || "")}>
+                        <Title>{nowPlaying?.results[0].title}</Title>
+                        <Overview>{nowPlaying?.results[0].overview}</Overview>
                     </Banner>
-                    <Slider>
+
+                    {categoriesString.map((e,i) =>(
+                      <Slider style={{marginTop: i === 0 ? 0 : 200}}>
+                      <Category>{`${e} movies`}</Category>
                         <AnimatePresence initial={false} onExitComplete={toggleLeaving}>
                             <Row variants={rowVariants} initial="hidden" animate="visible" exit="exit" transition={{type: "tween", duration: 1}} key={index}>
-                                {data?.results.slice(1).slice(offset*index, offset*index + offset).map(movie => 
+                                {categories[i]?.results.slice(1).slice(offset*index, offset*index + offset).map(movie => 
                                     <Box 
                                         layoutId={movie.id + ""}
                                         bgPhoto={makeImagePath(movie.backdrop_path, "w500")}
@@ -230,6 +247,11 @@ function Home() {
                             </Row>
                         </AnimatePresence>
                     </Slider>
+                    ))}
+                    
+                    
+
+
                     <AnimatePresence>
                         {bigMovieMatch ? (
                          <>
