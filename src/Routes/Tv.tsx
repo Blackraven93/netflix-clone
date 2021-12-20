@@ -1,6 +1,6 @@
 import { useQuery } from "react-query";
 import { motion, AnimatePresence, useViewportScroll  } from "framer-motion";
-import { getMovies, IGetMoviesResult, getTopRateMovies, getUpcomingMovies } from "./api";
+import { getLatestTv, getAiringTodayTv, getPopularTv, getTopRatedTv, IGetTvsResult } from "./api";
 import styled from "styled-components";
 import { makeImagePath } from "./utils";
 import { useState } from "react";
@@ -15,7 +15,7 @@ const Overlay = styled(motion.div)`
   opacity: 0;
 `;
 
-const BigMovie = styled(motion.div)`
+const BigTv = styled(motion.div)`
   position: absolute;
   width: 40vw;
   height: 80vh;
@@ -51,7 +51,7 @@ const BigOverview = styled.p`
 
 const Wrapper = styled.div`
     background: black;
-    height: 200vh;
+    height: 220vh;
     overflow: hidden;
 `
 
@@ -175,72 +175,74 @@ const offset = 6
 
 function Tv() {
     const navigator = useNavigate();
-    const bigMovieMatch = useMatch("/movies/:movieId");
-    console.log(bigMovieMatch)
+    const bigTvMatch = useMatch("/tv/:tvId");
 
-    const {data:nowPlaying, isLoading:nowPlayingLoading} = useQuery<IGetMoviesResult>(["movies", "nowPlaying"], getMovies)
-    const {data:topRate, isLoading:topRateLoading} = useQuery<IGetMoviesResult>(["movies", "topRate"], getTopRateMovies)
-    const {data:upcoming, isLoading:upcomingLoading} = useQuery<IGetMoviesResult>(["movies", "upcoming"], getUpcomingMovies)
+    
+    const {data:latest, isLoading:latestLoading} = useQuery<IGetTvsResult>(["tvs", "latest"], getLatestTv)
+    const {data:airing, isLoading:airingLoading} = useQuery<IGetTvsResult>(["tvs", "airing"], getAiringTodayTv)
+    const {data:popular, isLoading:popularLoading} = useQuery<IGetTvsResult>(["tvs", "popular"], getPopularTv)
+    const {data:topRated, isLoading:topLatedLoading} = useQuery<IGetTvsResult>(["tvs", "topRated"], getTopRatedTv)
+
 
     const [index, setIndex] = useState(0);
     const [leaving, setLeaving] = useState(false);
     
     const increateIndex = () => {
-        if (nowPlaying) {
+        if (latest) {
             if (leaving) return;
             toggleLeaving();
-            const totalMovies = nowPlaying.results.length - 2;
-            const maxIndex = Math.ceil(totalMovies / offset) - 1
+            const totalTvs = latest.results.length - 2;
+            const maxIndex = Math.ceil(totalTvs / offset) - 1
             
             setIndex((prev) => prev === maxIndex ? 0 : prev + 1)
         }
     }
 
     const toggleLeaving = () => setLeaving(prev => !prev);
-    const onBoxClicked = (movieId: number) => {
-        navigator(`/movies/${movieId}`);
+    const onBoxClicked = (tvId: number) => {
+        navigator(`/tv/${tvId}`);
       };
-    const onOverlayClick = () => navigator("/");
+    const onOverlayClick = () => navigator("/tv");
 
-    const clickedMovie =
-    bigMovieMatch?.params.movieId &&
-    nowPlaying?.results.find((movie) => movie.id + "" === bigMovieMatch.params.movieId);
+    const clickedTv =
+    bigTvMatch?.params.tvId &&
+    latest?.results.find((movie) => movie.id + "" === bigTvMatch.params.tvId);
 
     const { scrollY } = useViewportScroll();
-
-    const categories = [nowPlaying, topRate, upcoming]
-    const categoriesString = ["nowPlaying", "topRate", "upcoming" ]
+    
+    const categories = [latest, airing, popular, topRated]
+    const categoriesString = ["latest", "airing", "popular", "topRated" ]
     return (
         <Wrapper>
-            {nowPlayingLoading ? (
+            {latestLoading ? (
                 <Loader>
                     Loading...
                 </Loader>
             ) : (
                 <>
-                    <Banner onClick={increateIndex} bgPhoto={makeImagePath(nowPlaying?.results[0].backdrop_path || "")}>
-                        <Title>{nowPlaying?.results[0].title}</Title>
-                        <Overview>{nowPlaying?.results[0].overview}</Overview>
+                    <Banner onClick={increateIndex} bgPhoto={makeImagePath(latest?.results[0].backdrop_path || "")}>
+                        <Title>{latest?.results[0].name}</Title>
+                        <Overview>{latest?.results[0].overview}</Overview>
                     </Banner>
 
                     {categoriesString.map((e,i) =>(
                       <Slider style={{marginTop: i === 0 ? 0 : 200}}>
-                      <Category>{`${e} movies`}</Category>
+                      <Category>{`${e} tv`}</Category>
                         <AnimatePresence initial={false} onExitComplete={toggleLeaving}>
                             <Row variants={rowVariants} initial="hidden" animate="visible" exit="exit" transition={{type: "tween", duration: 1}} key={index}>
-                                {categories[i]?.results.slice(1).slice(offset*index, offset*index + offset).map(movie => 
+                                {categories[i]?.results.slice(1).slice(offset*index, offset*index + offset).map(tv => 
                                     <Box 
-                                        layoutId={movie.id + ""}
-                                        bgPhoto={makeImagePath(movie.backdrop_path, "w500")}
-                                        key={movie.id}
+                                        layoutId={tv.id + ""}
+                                        bgPhoto={makeImagePath(tv.backdrop_path, "w500")}
+                                        key={tv.id}
                                         whileHover="hover"
                                         initial="normal"
                                         variants={boxVariants}
                                         transition={{ type: "tween" }}
-                                        onClick={() => onBoxClicked(movie.id)}
+                                        onClick={() => onBoxClicked(tv.id)}
                                         >
                                         <Info variants={infoVariants}>
-                                            <h4>{movie.title}</h4>
+                                            <h4>{tv.name}</h4>
                                         </Info>
                                     </Box>
                                 )}
@@ -253,32 +255,32 @@ function Tv() {
 
 
                     <AnimatePresence>
-                        {bigMovieMatch ? (
+                        {bigTvMatch ? (
                          <>
                          <Overlay
                            onClick={onOverlayClick}
                            exit={{ opacity: 0 }}
                            animate={{ opacity: 1 }}
                          />
-                         <BigMovie
+                         <BigTv
                            style={{ top: scrollY.get() + 100 }}
-                           layoutId={bigMovieMatch.params.movieId}
+                           layoutId={bigTvMatch.params.tvId}
                          >
-                            {clickedMovie && (
+                            {clickedTv && (
                                 <>
                                     <BigCover
                                         style={{
                                         backgroundImage: `linear-gradient(to top, black, transparent), url(${makeImagePath(
-                                            clickedMovie.backdrop_path,
+                                            clickedTv.backdrop_path,
                                             "w500"
                                         )})`,
                                         }}
                                     />
-                                    <BigTitle>{clickedMovie.title}</BigTitle>
-                                    <BigOverview>{clickedMovie.overview}</BigOverview>
+                                    <BigTitle>{clickedTv.name}</BigTitle>
+                                    <BigOverview>{clickedTv.overview}</BigOverview>
                                 </>
                             )}
-                         </BigMovie>
+                         </BigTv>
                        </>
                         ) : null}
                 </AnimatePresence>
