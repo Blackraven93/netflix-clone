@@ -109,6 +109,7 @@ const Box = styled(motion.div)<{bgPhoto:string}>`
     background-image: url(${(props) => props.bgPhoto});
     background-size: cover;
     background-position: center center;
+    border-radius: 20px;
     height: 200px;
     cursor: pointer;
 
@@ -129,6 +130,7 @@ const Info = styled(motion.div)`
   h4 {
     text-align: center;
     font-size: 18px;
+    color:white;
   }
 `;
 
@@ -275,6 +277,9 @@ function Home() {
                                         }}
                                     />
                                     <BigTitle>{clickedMovie.title}</BigTitle>
+                                    <BigOverview>{`Release date : ${clickedMovie.release_date}`}</BigOverview>
+                                    <BigOverview>{`Popularity : ${Math.ceil(clickedMovie.popularity)}`}</BigOverview>
+                                    <BigOverview>{`Vote Count : ${clickedMovie.vote_count}`}</BigOverview>
                                     <BigOverview>{clickedMovie.overview}</BigOverview>
                                 </>
                             )}

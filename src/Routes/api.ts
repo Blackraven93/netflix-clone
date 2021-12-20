@@ -7,6 +7,9 @@ interface IMovie {
     poster_path: string;
     title: string;
     overview:string;
+    release_date:string;
+    vote_count:number;
+    popularity:number;
 }
 
 
@@ -44,6 +47,7 @@ interface ITv {
     status:string;
     vote_average: number;
     vote_count:number;
+    popularity:number;
 }
 
 export interface IGetTvsResult {

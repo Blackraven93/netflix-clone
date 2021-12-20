@@ -76,6 +76,7 @@ const Banner = styled.div<{ bgPhoto: string}>`
 const Title = styled.h2`
     font-size: 68px;
     margin-bottom:20px;
+    color:whitesmoke;
 `
 
 const Category = styled.h3`
@@ -89,6 +90,7 @@ const Category = styled.h3`
 const Overview = styled.p`
     font-size: 36px;
     width: 50%;
+    color: whitesmoke;
 `
 
 const Slider = styled.div`
@@ -109,6 +111,7 @@ const Box = styled(motion.div)<{bgPhoto:string}>`
     background-image: url(${(props) => props.bgPhoto});
     background-size: cover;
     background-position: center center;
+    border-radius: 20px;
     height: 200px;
     cursor: pointer;
 
@@ -129,6 +132,7 @@ const Info = styled(motion.div)`
   h4 {
     text-align: center;
     font-size: 18px;
+    color:white;
   }
 `;
 
@@ -277,7 +281,12 @@ function Tv() {
                                         }}
                                     />
                                     <BigTitle>{clickedTv.name}</BigTitle>
-                                    <BigOverview>{clickedTv.overview}</BigOverview>
+                                    {clickedTv.type !== undefined && <BigOverview>{`${clickedTv.type}`}</BigOverview>}
+                                    {clickedTv.status !== undefined && <BigOverview>{`Status : ${clickedTv.status}`}</BigOverview>}
+                                    {clickedTv.vote_average !== undefined && <BigOverview>{`Vote average : ${clickedTv.vote_average}`}</BigOverview>}
+                                    {clickedTv.vote_count !== undefined && <BigOverview>{`Vote count : ${clickedTv.vote_count}`}</BigOverview>}
+                                    {clickedTv.popularity !== undefined && <BigOverview>{`Popularity : ${Math.ceil(clickedTv.popularity)}`}</BigOverview>}
+                                    {clickedTv.overview !== undefined && <BigOverview>{`${clickedTv.overview}`}</BigOverview>}
                                 </>
                             )}
                          </BigTv>
