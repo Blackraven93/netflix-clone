@@ -5,13 +5,24 @@ import Search from "./Routes/Search";
 import Tv from "./Routes/Tv";
 
 function App() {
+
+    // let element = useRoutes([
+    //   { path: "/tv", element: <Tv/>},
+    //   { path: "/search", element: <Search/>},
+    //   { path:"/", element: <Home />, children: [
+    //     { path: '/movies/:movieId'}
+    //   ]},
+    // ])
+
   return (
     <Router>
       <Header />
       <Routes>
         <Route path="/tv" element={<Tv />}/>
         <Route path="/search" element={<Search />}/>
-        <Route path="/" element={<Home />}/>
+        <Route path="/" element={<Home />} >
+          <Route path="/movies/:movieId" element={<Home/>} />
+        </Route>
       </Routes>
     </Router>
   );
