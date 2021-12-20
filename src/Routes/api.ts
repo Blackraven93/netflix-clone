@@ -45,6 +45,7 @@ interface ITv {
     vote_average: number;
     vote_count:number;
 }
+
 export interface IGetTvsResult {
     results: ITv[];
 }
@@ -67,5 +68,16 @@ export function getTopRatedTv() {
 }
 
 
+export function searchMovies(keyword:string|null) {
+    return fetch(`${BASE_PATH}/search/movie?query=${keyword}&api_key=${API_KEY}`).then(
+        response => response.json()
+    );
+}
+
+export function searchTvs(keyword:string|null) {
+    return fetch(`${BASE_PATH}/search/tv?query=${keyword}&api_key=${API_KEY}`).then(
+        response => response.json()
+    );
+}
 
 
