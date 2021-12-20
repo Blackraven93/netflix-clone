@@ -58,7 +58,26 @@ const Box = styled(motion.div)<{bgPhoto:string}>`
     background-size: cover;
     background-position: center center;
     height: 200px;
+    &:first-child {
+    transform-origin: center left;
+    }
+    &:last-child {
+        transform-origin: center right;
+    }
 `
+const Info = styled(motion.div)`
+  padding: 10px;
+  background-color: ${(props) => props.theme.black.lighter};
+  opacity: 0;
+  position: absolute;
+  width: 100%;
+  bottom: 0;
+  h4 {
+    text-align: center;
+    font-size: 18px;
+  }
+`;
+
 
 const rowVariants = {
     hidden: {
@@ -72,6 +91,33 @@ const rowVariants = {
     },
   };
 
+  const boxVariants = {
+    normal: {
+      scale: 1,
+    },
+    hover: {
+      scale: 1.3,
+      y: -80,
+      transition: {
+        delay: 0.4,
+        duaration: 0.1,
+        type: "tween",
+      },
+    },
+  };
+
+  const infoVariants = {
+    hover: {
+      opacity: 1,
+      transition: {
+        delay: 0.5,
+        duaration: 0.1,
+        type: "tween",
+      },
+    },
+}
+
+const offset = 6
 
 function Home() {
     const {data, isLoading} = useQuery<IGetMoviesResult>(["movies", "nowPlaying"], getMovies)
@@ -91,7 +137,6 @@ function Home() {
 
     const toggleLeaving = () => setLeaving(prev => !prev);
 
-    const offset = 6
 
     return (
         <Wrapper>
@@ -108,7 +153,20 @@ function Home() {
                     <Slider>
                         <AnimatePresence initial={false} onExitComplete={toggleLeaving}>
                             <Row variants={rowVariants} initial="hidden" animate="visible" exit="exit" transition={{type: "tween", duration: 1}} key={index}>
-                                {data?.results.slice(1).slice(offset*index, offset*index + offset).map(movie => <Box bgPhoto={makeImagePath(movie.backdrop_path, "w500")} key={movie.id}>{movie.title}</Box>)}
+                                {data?.results.slice(1).slice(offset*index, offset*index + offset).map(movie => 
+                                    <Box 
+                                        bgPhoto={makeImagePath(movie.backdrop_path, "w500")}
+                                        key={movie.id}
+                                        whileHover="hover"
+                                        initial="normal"
+                                        variants={boxVariants}
+                                        transition={{ type: "tween" }}
+                                        >
+                                        <Info variants={infoVariants}>
+                                            <h4>{movie.title}</h4>
+                                        </Info>
+                                    </Box>
+                                )}
                             </Row>
                         </AnimatePresence>
                     </Slider>
